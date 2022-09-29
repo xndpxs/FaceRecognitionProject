@@ -17,15 +17,22 @@ cv2.rectangle(imgElon, (facLoc[3], facLoc[0]), (facLoc[1], facLoc[2]), (0, 255, 
 
 # Recognize and encode the faces
 facLocTest = face_recognition.face_locations(imgTest)[0]
-encodeElonTest = face_recognition.face_encodings(imgTest)[0]
+encodeTest = face_recognition.face_encodings(imgTest)[0]
 
 # x,y positions, color, thickness
 cv2.rectangle(imgTest, (facLocTest[3], facLocTest[0]), (facLocTest[1], facLocTest[2]), (0, 255, 0), 2)
 
 # compare faces through encodings, true on console for similar
-results = face_recognition.compare_faces([encodeElon], encodeElonTest)
+results = face_recognition.compare_faces([encodeElon], encodeTest)
 
-print(results)
+# Find the best match
+faceDis = face_recognition.face_distance([encodeElon], encodeTest)
+
+# Print the results
+print(results, faceDis)
+
+# Print the results
+cv2.putText(imgTest, f'{results} {round(faceDis[0], 3)}', (50, 50), cv2.FONT_HERSHEY_DUPLEX, 1, (255,0,0), 2)
 
 cv2.imshow('Elon Musk', imgElon)
 cv2.imshow('Elon Test', imgTest)
