@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import face_recognition
 import os
-
+from datetime import datetime
 # Grabbing the images from the folder
 path = 'ImagesAttendance'
 images = []
@@ -24,6 +24,26 @@ def findEncodings(images):
         encodeList.append(encode)
     return encodeList
 
+# To mark the attendance
+# you could put a database connection here, more research is required
+def markAttendance(name):
+    with open('Attendance.csv', 'r+') as f:
+        myDataList = f.readlines()
+        print(myDataList)
+        nameList = []
+        for line in myDataList:
+            entry = line.split(',')
+            nameList.append(entry[0])
+        if name not in nameList:
+            now = datetime.now()
+            dtString = now.strftime('%H:%M:%S')
+            f.writelines(f'\n{name},{dtString}')
+
+
+
+
+
+
 
 # call the function
 encodeListKnown = findEncodings(images)
@@ -42,11 +62,17 @@ while True:
     for encodeFace, faceLoc in zip(encodesCurFrame, facesCurrentFrame):
         matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
         faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
-        print(faceDis)
+        #print(faceDis)
         matchIndex = np.argmin(faceDis)   # check the min, min more exact match
         if matches[matchIndex]:
             name = classNames[matchIndex].upper()
-            print(name)
+            #print(name)
+            y1,x2,y2,x1 = faceLoc   # Draw the rectangle in the face
+            y1, x2, y2, x1 = y1*4,x2*4,y2*4,x1*4   # multiplying by 4 because we resized previously
+            cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
+            cv2.rectangle(img,(x1,y2-35),(x2,y2),(0,255,0),cv2.FILLED)
+            cv2.putText(img,name,(x1+6, y2-6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2)
+            markAttendance(name) # calling the name to check attendance
 
 
     cv2.imshow('Webcam', img)
